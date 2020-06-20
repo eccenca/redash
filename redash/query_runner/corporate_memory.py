@@ -119,7 +119,11 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         for sparql_row in sparql_results["results"]["bindings"]:
             row = {}
             for var in sparql_results["head"]["vars"]:
-                row[var] = sparql_row[var]["value"]
+                try:
+                    row[var] = sparql_row[var]["value"]
+                except KeyError:
+                    # not bound SPARQL variables are set as empty strings
+                    row[var] = ""
             rows.append(row)
         # transform all vars to redash columns
         columns = []
