@@ -33,4 +33,5 @@ certifi
 pydgraph==1.2.0
 azure-kusto-data==0.0.32
 rdflib>=4.2.2
+cmempy
 

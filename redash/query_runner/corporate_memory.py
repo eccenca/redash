@@ -10,14 +10,12 @@ from os import environ
 from redash.query_runner import BaseQueryRunner
 from redash.utils import json_dumps, json_loads
 from . import register
-from cmempy.queries import SparqlQuery
 
-#try:
-    #import cmempy
-    #import rdflib
-enabled = True
-#except ImportError:
-#    enabled = False
+try:
+    from cmempy.queries import SparqlQuery
+    enabled = True
+except ImportError:
+    enabled = False
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +87,6 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
                 else:
                     logger.info(f"{key} set by config to {environ[key]}")
 
-
     def _transform_sparql_results(self, results):
         """transforms a SPARQL query result to a redash query result
 
@@ -98,7 +95,7 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
 
         target structure: redash result set
             there is no good documentation available
-            so here an example result set needed for redash:
+            so here an example result set as needed for redash:
             data = {
                 "columns": [ {"name": "name", "type": "string", "friendly_name": "friendly name"}],
                 "rows": [
@@ -209,5 +206,6 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
             "required": ["CMEM_BASE_URI", "OAUTH_GRANT_TYPE", "OAUTH_CLIENT_ID"],
             "secret": ["OAUTH_CLIENT_SECRET"]
         }
+
 
 register(CorporateMemoryQueryRunner)
