@@ -83,9 +83,13 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
             if value is not None:
                 environ[key] = value
                 if key in self.KNOWN_SECRET_KEYS:
-                    logger.info(f"{key} set by config")
+                    logger.info(
+                        "{} set by config".format(key)
+                    )
                 else:
-                    logger.info(f"{key} set by config to {environ[key]}")
+                    logger.info(
+                        "{} set by config to {}".format(key, environ[key])
+                    )
 
     def _transform_sparql_results(self, results):
         """transforms a SPARQL query result to a redash query result
@@ -107,7 +111,7 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
             values and, in case they are all the same, choose something better than
             just string.
         """
-        logger.info(f"results are: {results}")
+        logger.info("results are: {}".format(results))
         # Not sure why we do not use the json package here but all other
         # query runner do it the same way :-)
         sparql_results = json_loads(results)
@@ -157,7 +161,7 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
                 possible race condition which should be avoided
         TODO: Provide error handling, especially SPARQL query error output
         """
-        logger.info(f"about to execute query: {query}")
+        logger.info("about to execute query: {}".format(query))
         self._setup_environment()
         data = self._transform_sparql_results(
                 SparqlQuery(query).get_results()
