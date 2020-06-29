@@ -39,7 +39,7 @@ services:
     image: redis:3-alpine
     restart: unless-stopped
   postgres:
-    image: postgres:9.5-alpine
+    image: postgres:9.5.19-alpine
     # The following turns the DB into less durable, but gains significant performance improvements for the tests run (x3
     # improvement on my personal machine). We should consider moving this into a dedicated Docker Compose configuration for
     # tests.
