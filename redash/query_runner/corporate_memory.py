@@ -201,12 +201,7 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
 
     @classmethod
     def configuration_schema(cls):
-        """provide the configuration of the data source as json schema
-
-        TODO: support password grant type with OAUTH_USER and OAUTH_PASSWORD
-            as well.
-        TODO:
-        """
+        """provide the configuration of the data source as json schema"""
         return {
             "type": "object",
             "properties": {
