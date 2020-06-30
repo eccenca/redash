@@ -5,7 +5,10 @@ seeAlso: https://eccenca.com/
 """
 
 import logging
+import json
 from os import environ
+
+import requests.exceptions
 
 from redash.query_runner import BaseQueryRunner
 from redash.utils import json_dumps, json_loads
@@ -157,7 +160,6 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
 
         TODO: between _setup_environment and .get_results call there is a
                 possible race condition which should be avoided
-        TODO: Provide error handling, especially SPARQL query error output
         """
         # allows for non-ascii chars in the query text
         query_text = query.encode("utf-8")
@@ -166,17 +168,34 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         query_type = query.get_query_type()
         # type of None means, there is an error in the query
         # so execution is at least tried on endpoint
-        if query_type not in ["SELECT", None ]:
+        if query_type not in ["SELECT", None]:
             raise ValueError(
                 "Queries of type {} can not be processed by redash."
                 .format(query_type)
             )
 
         self._setup_environment()
-        data = self._transform_sparql_results(
+        try:
+            data = self._transform_sparql_results(
                 # allows for non-ascii chars in the result
                 query.get_results().encode("utf-8")
-        )
+            )
+        except Exception as error:
+            logger.info("Error: {}".format(error))
+            try:
+                # try to load Problem Details for HTTP API JSON
+                details = json.loads(error.response.text)
+                error = ""
+                if 'title' in details:
+                    error += details["title"] + ": "
+                if 'detail' in details:
+                    error += details["detail"]
+                    return None, error
+            except Exception:
+                pass
+
+            return None, error
+
         error = None
         return data, error
 
