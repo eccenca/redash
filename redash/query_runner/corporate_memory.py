@@ -155,19 +155,27 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
     def run_query(self, query, user):
         """send a sparql query to corporate memory
 
-        TODO: check for query type and throw an error if there is a non-SELECT
-                query executed
         TODO: between _setup_environment and .get_results call there is a
                 possible race condition which should be avoided
         TODO: Provide error handling, especially SPARQL query error output
         """
         # allows for non-ascii chars in the query text
-        query = query.encode("utf-8")
-        logger.info("about to execute query: {}".format(query))
+        query_text = query.encode("utf-8")
+        logger.info("about to execute query: {}".format(query_text))
+        query = SparqlQuery(query_text)
+        query_type = query.get_query_type()
+        # type of None means, there is an error in the query
+        # so execution is at least tried on endpoint
+        if query_type not in ["SELECT", None ]:
+            raise ValueError(
+                "Queries of type {} can not be processed by redash."
+                .format(query_type)
+            )
+
         self._setup_environment()
         data = self._transform_sparql_results(
                 # allows for non-ascii chars in the result
-                SparqlQuery(query).get_results().encode("utf-8")
+                query.get_results().encode("utf-8")
         )
         error = None
         return data, error
