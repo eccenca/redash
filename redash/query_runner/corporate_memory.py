@@ -160,12 +160,14 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         TODO: between _setup_environment and .get_results call there is a
                 possible race condition which should be avoided
         TODO: Provide error handling, especially SPARQL query error output
-        TODO: Fix error "Error running query: 'ascii' codec can't encode character ...: ordinal not in range(128)"
         """
+        # allows for non-ascii chars in the query text
+        query = query.encode("utf-8")
         logger.info("about to execute query: {}".format(query))
         self._setup_environment()
         data = self._transform_sparql_results(
-                SparqlQuery(query).get_results()
+                # allows for non-ascii chars in the result
+                SparqlQuery(query).get_results().encode("utf-8")
         )
         error = None
         return data, error
