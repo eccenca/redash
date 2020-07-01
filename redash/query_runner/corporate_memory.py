@@ -8,14 +8,13 @@ import logging
 import json
 from os import environ
 
-import requests.exceptions
-
 from redash.query_runner import BaseQueryRunner
 from redash.utils import json_dumps, json_loads
 from . import register
 
 try:
     from cmempy.queries import SparqlQuery
+    from cmempy.dp.proxy import get as get_graphs
     enabled = True
 except ImportError:
     enabled = False
@@ -163,7 +162,8 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         """
         # allows for non-ascii chars in the query text
         query_text = query.encode("utf-8")
-        logger.info("about to execute query: {}".format(query_text))
+        logger.info("about to execute query (user='{}'): {}"
+                    .format(user, query_text))
         query = SparqlQuery(query_text)
         query_type = query.get_query_type()
         # type of None means, there is an error in the query
@@ -199,8 +199,7 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         error = None
         return data, error
 
-    @classmethod
-    def configuration_schema(cls):
+    def configuration_schema(self):
         """provide the configuration of the data source as json schema"""
         return {
             "type": "object",
@@ -235,6 +234,50 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
             "required": ["CMEM_BASE_URI", "OAUTH_GRANT_TYPE", "OAUTH_CLIENT_ID"],
             "secret": ["OAUTH_CLIENT_SECRET"]
         }
+
+    def get_schema(self, get_stats=False):
+        """Get the schema structure (prefixes, graphs)."""
+        schema = dict()
+        schema["1"] = {
+            'name': "Common Prefixes",
+            'columns': self._get_common_prefixes()
+        }
+        schema["2"] = {
+            'name': "Graphs",
+            'columns': self._get_graphs()
+        }
+        logger.info(schema.values())
+        return schema.values()
+
+    def _get_graphs(self):
+        """Return all readable graphs."""
+        self._setup_environment()
+        query_result = json_loads(
+            self._transform_sparql_results(
+                SparqlQuery(
+                    "SELECT DISTINCT ?graph WHERE {GRAPH ?graph {?s ?p ?o}}"
+                ).get_results()
+            )
+        )
+        graphs = []
+        for row in query_result["rows"]:
+            graphs.append(
+                "FROM <{}>".format(row.get("graph"))
+            )
+        return graphs
+
+    @staticmethod
+    def _get_common_prefixes():
+        """Return a dict of common / well know prefix declarations."""
+        common_prefixes = [
+            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+            "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+            "PREFIX schema: <http://schema.org/>",
+            "PREFIX dct: <http://purl.org/dc/terms/>",
+            "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>"
+        ]
+        return common_prefixes
 
 
 register(CorporateMemoryQueryRunner)
