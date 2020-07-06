@@ -295,7 +295,7 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         query_result = json_loads(
             self._transform_sparql_results(
                 SparqlQuery(
-                    "SELECT DISTINCT ?graph WHERE {GRAPH ?graph {?s ?p ?o}}"
+                    "SELECT DISTINCT ?graph WHERE {GRAPH ?graph {?s ?p ?o}} ORDER BY ASC(?graph)"
                 ).get_results()
             )
         )
