@@ -13,7 +13,11 @@ from redash.utils import json_dumps, json_loads
 from . import register
 
 try:
-    from cmempy.queries import SparqlQuery
+    from cmempy.queries import (
+        SparqlQuery,
+        QueryCatalog,
+        QUERY_STRING
+    )
     from cmempy.dp.proxy import get as get_graphs
     enabled = True
 except ImportError:
@@ -69,6 +73,10 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
             catalog URIs in order to use them in queries
 
         TODO?: implement a way to use queries from the query catalog
+
+        TODO: allow a checkbox to NOT use owl:imports imported graphs
+
+        TODO: allow to use a context graph per data source
         """
         self.configuration = configuration
 
@@ -199,7 +207,8 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         error = None
         return data, error
 
-    def configuration_schema(self):
+    @classmethod
+    def configuration_schema(cls):
         """provide the configuration of the data source as json schema"""
         return {
             "type": "object",
@@ -239,18 +248,49 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         """Get the schema structure (prefixes, graphs)."""
         schema = dict()
         schema["1"] = {
-            'name': "Common Prefixes",
-            'columns': self._get_common_prefixes()
+            'name': "-> Common Prefixes <-",
+            'columns': self._get_common_prefixes_schema()
         }
         schema["2"] = {
-            'name': "Graphs",
-            'columns': self._get_graphs()
+            'name': "-> Graphs <-",
+            'columns': self._get_graphs_schema()
         }
+        #schema.update(self._get_query_schema())
         logger.info(schema.values())
         return schema.values()
 
-    def _get_graphs(self):
-        """Return all readable graphs."""
+    def _get_query_schema(self):
+        """Return the query parts of the schema."""
+        schema = dict()
+        self._setup_environment()
+        query_catalog = QueryCatalog()
+        query_index = 0
+        #logger.info(str(QUERY_STRING))
+        for _, query in query_catalog.get_queries().items():
+            logger.info("------> " + str(query.label))
+            logger.info(str(query.get_query_type()))
+            logger.info(str(query.short_url))
+            logger.info(str(query.text))
+            logger.info(type(query.get_placeholder_keys()))
+            logger.info(str(query.get_placeholder_keys()))
+            if query.get_query_type() in ["SELECT", None]:
+                schema_index = "q{}".format(query_index)
+                columns = ["LOAD_QUERY={}".format(query.short_url)]
+                for parameter in query.get_placeholder_keys():
+                    logger.info(type(parameter))
+                    columns.append(
+                        parameter + "={{" + parameter + "}}"
+                    )
+                logger.info(columns)
+                schema[schema_index] = {
+                    'name': query.label,
+                    'columns': columns
+                }
+                query_index += 1
+        return schema
+
+    def _get_graphs_schema(self):
+        """Return all readable graphs as redash schema structure"""
         self._setup_environment()
         query_result = json_loads(
             self._transform_sparql_results(
@@ -267,7 +307,7 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         return graphs
 
     @staticmethod
-    def _get_common_prefixes():
+    def _get_common_prefixes_schema():
         """Return a dict of common / well know prefix declarations."""
         common_prefixes = [
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
