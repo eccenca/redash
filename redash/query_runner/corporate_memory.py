@@ -239,6 +239,11 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
                     "type": "string",
                     "title": "OAUTH_PASSWORD - only needed for grant type 'password'"
                 },
+                "SSL_VERIFY": {
+                    "type": "string",
+                    "title": "SSL_VERIFY - Verify SSL certs for API requests",
+                    "default": "true"
+        },
             },
             "required": ["CMEM_BASE_URI", "OAUTH_GRANT_TYPE", "OAUTH_CLIENT_ID"],
             "secret": ["OAUTH_CLIENT_SECRET"]
