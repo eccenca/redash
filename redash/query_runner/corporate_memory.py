@@ -243,7 +243,11 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
                     "type": "string",
                     "title": "SSL_VERIFY - Verify SSL certs for API requests",
                     "default": "true"
-        },
+                },
+                "REQUESTS_CA_BUNDLE": {
+                    "type": "string",
+                    "title": "REQUESTS_CA_BUNDLE - Path to the CA Bundle file (.pem)"
+                },
             },
             "required": ["CMEM_BASE_URI", "OAUTH_GRANT_TYPE", "OAUTH_CLIENT_ID"],
             "secret": ["OAUTH_CLIENT_SECRET"]
