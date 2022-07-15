@@ -219,15 +219,21 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
                     "type": "string",
                     "title": "Path to the CA Bundle file (.pem)",
                 },
+                "OAUTH_TOKEN_URI": {
+                    "type": "string",
+                    "title": "Keycloak token URL",
+                    #"default": ""
+                }
             },
             "required": ["CMEM_BASE_URI", "OAUTH_GRANT_TYPE", "OAUTH_CLIENT_ID"],
             "secret": ["OAUTH_CLIENT_SECRET", "OAUTH_PASSWORD"],
             "extra_options": [
+                "OAUTH_TOKEN_URI",
                 "OAUTH_GRANT_TYPE",
                 "OAUTH_USER",
                 "OAUTH_PASSWORD",
                 "SSL_VERIFY",
-                "REQUESTS_CA_BUNDLE",
+                "REQUESTS_CA_BUNDLE"
             ],
         }
 
