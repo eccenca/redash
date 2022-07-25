@@ -34,7 +34,6 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
         "SSL_VERIFY",
         "REQUESTS_CA_BUNDLE",
         "DP_API_ENDPOINT",
-        "DI_API_ENDPOINT",
         "OAUTH_TOKEN_URI",
         "OAUTH_GRANT_TYPE",
         "OAUTH_USER",
@@ -228,11 +227,6 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
                     "type": "string",
                     "title": "Dataplatform endpoint URL",
                     #"default": ""
-                },
-                "DI_API_ENDPOINT": {
-                    "type": "string",
-                    "title": "Dataintegration endpoint URL",
-                    #"default": ""
                 }
             },
             "required": ["CMEM_BASE_URI", "OAUTH_GRANT_TYPE", "OAUTH_CLIENT_ID"],
@@ -240,7 +234,6 @@ class CorporateMemoryQueryRunner(BaseQueryRunner):
             "extra_options": [
                 "OAUTH_TOKEN_URI",
                 "DP_API_ENDPOINT",
-                "DI_API_ENDPOINT",
                 "OAUTH_GRANT_TYPE",
                 "OAUTH_USER",
                 "OAUTH_PASSWORD",
